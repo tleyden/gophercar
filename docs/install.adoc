@@ -1,0 +1,154 @@
+[%hardbreaks]
+
+= Gophercar Installation
+:toc: left
+:toclevels: 3
+
+== Install Prereqs
+
+=== Raspbian Stretch
+
+See the https://www.raspberrypi.org/documentation/installation/installing-images/mac.md[Raspbian Docs] for creating a Raspbian Stretch SD Card.
+
+==== Update
+
+```
+$ apt-get update
+$ apt-get dist-upgrade
+```
+
+==== Verify kernel version
+
+This should be at least 4.14+
+
+```
+$ uname -a
+Linux raspberrypi 4.14.62-v7+ #1134 SMP Tue Aug 14 17:10:10 BST 2018 armv7l GNU/Linux
+```
+
+=== Go 1.10+
+
+See the https://golang.org/doc/install[Go Docs] for installing Go 1.10 or later on the Raspi
+
+=== GoCV + OpenCV
+
+See the https://github.com/hybridgroup/gocv[GoCV Readme] for instructions on installing GoCV + OpenCV:
+
+```
+$ go get -u -d gocv.io/x/gocv
+$ cd $GOPATH/src/gocv.io/x/gocv
+$ make install_raspi
+```
+
+=== SDL2 v2.0.8+
+
+You must install SDL2 from source to get SDL2 v2.0.8+ or later, since installing via `apt-get` will give you SDL2 2.0.5.
+
+The following steps are a condensed version of the https://choccyhobnob.com/raspberry-pi/sdl2-2-0-8-on-raspberry-pi/[choccyhobnob instructions to install SDL2 from source]
+
+
+==== Build dependencies
+
+```
+$ apt-get install -y libfontconfig-dev qt5-default automake mercurial libtool libfreeimage-dev libopenal-dev libpango1.0-dev libsndfile-dev libudev-dev libtiff5-dev libwebp-dev libasound2-dev libaudio-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev libesd0-dev freeglut3-dev libmodplug-dev libsmpeg-dev libjpeg-dev
+```
+
+==== Get + Build SDL code
+
+
+Build:
+
+```
+wget https://www.libsdl.org/release/SDL2-2.0.8.tar.gz
+tar -zxvf SDL2-2.0.8.tar.gz
+cd SDL2-2.0.8/
+./configure && make && sudo make install
+```
+
+Verify:
+
+```
+$ sdl2-config --version
+2.0.8
+```
+
+== Hardware
+
+=== Camera
+
+Install the Camera hardware into the raspi based on https://www.youtube.com/watch?v=T8T6S5eFpqE[TheRaspberryPiGuy YouTube video]
+
+
+== Enable Kernel Modules
+
+=== I2C
+
+```
+$ sudo raspi-config
+```
+
+. Use the down arrow to select 5 Interfacing Options.
+. Arrow down to P5 I2C .
+. Select yes when it asks you to enable I2C.
+
+=== Camera
+
+```
+$ sudo raspi-config
+```
+
+. Use the down arrow to select 5 Interfacing Options.
+. Arrow down to Camera .
+. Select yes when it asks you to enable Camera.
+
+=== bcm2835_v4l2
+
+This module is needed for GoCV/OpenCV to access the camera.
+
+To load it on a one-time basis:
+
+```
+$ sudo modprobe bcm2835-v4l2
+```
+
+To have it auto-loaded on system boot:
+
+```
+$ sudo su -
+$ echo "bcm2835-v4l2" >> /etc/modules
+```
+
+== Install Gophercar
+
+
+=== Go get
+
+```
+$ go get -u github.com/hybridgroup/gophercar/...
+```
+
+== Verify Gophercar
+
+=== ServoTest
+
+=== KeyboardCar
+
+== Troubleshooting
+
+=== not supported before SDL 2.x.x compile errors
+
+If you get compile errors like:
+
+```
+../../../github.com/veandco/go-sdl2/sdl/vulkan.go:53:9: note: #pragma message: SDL_Vulkan_GetDrawableSize is not supported before SDL 2.0.6 #pragma message("SDL_Vulkan_GetDrawableSize is not supported before SDL 2.0.6")
+```
+
+Not sure why this is needed, reported to Gophers/gophercar Slack channel on Sept 9, 2018.
+
+```
+$ cd /root/go/src/github.com/veandco/go-sdl2/sdl
+$ <edit file to #include <SDL2/SDL.h> even if not windows>
+```
+
+And then re-run the `go get` command
+
