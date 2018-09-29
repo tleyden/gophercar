@@ -17,10 +17,10 @@ package cmd
 import (
 	"log"
 
-	"github.com/spf13/cobra"
-	"github.com/hybridgroup/gophercar"
-	"strconv"
 	"fmt"
+	"github.com/hybridgroup/gophercar"
+	"github.com/spf13/cobra"
+	"strconv"
 )
 
 // cameraviewCmd represents the cameraview command
@@ -49,8 +49,16 @@ func init() {
 
 	rootCmd.AddCommand(cameraviewCmd)
 
-	cameraviewCmd.PersistentFlags().Int("camera-id", 0, "The camera id, eg, 0")
+	cameraviewCmd.PersistentFlags().Int(
+		"camera-id",
+		0,
+		"The camera id, eg, 0",
+	)
 
-	cameraviewCmd.PersistentFlags().String("stream-listen-url", "0.0.0.0:8080", "The interface and port to listen on to stream the video")
+	cameraviewCmd.PersistentFlags().String(
+		"stream-listen-url",
+		"0.0.0.0:8080",
+		"The interface and port to listen on to stream the video",
+	)
 
 }

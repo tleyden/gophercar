@@ -1,17 +1,10 @@
-// drive with your keyboard!
-//
-// controls:
-// 	up arrow - forward
-// 	down arrow - backward
-//	right arrow - turn right
-//	left arrow - turn left
-//
-package main
+package gophercar
 
 import (
+	"time"
+
 	"fmt"
 	"math"
-	"time"
 
 	"github.com/fogleman/gg"
 	"gobot.io/x/gobot"
@@ -20,36 +13,36 @@ import (
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
-var (
-	r       *raspi.Adaptor
-	pca9685 *i2c.PCA9685Driver
-	oled    *i2c.SSD1306Driver
-	// mpu6050 *i2c.MPU6050Driver
+// Drive the car via keyboard control
+func DriveKeyboard(enableMpu6050 bool) {
 
-	ctx *gg.Context
+	r := raspi.NewAdaptor()
+	pca9685 := i2c.NewPCA9685Driver(r)
+	oled := i2c.NewSSD1306Driver(r)
 
-	throttleZero  = 350
-	throttlePower = 0.25
-	steering      = 0.0
-)
+	var mpu6050 *i2c.MPU6050Driver
+	if enableMpu6050 {
+		mpu6050 = i2c.NewMPU6050Driver(r)
 
-func main() {
-	r = raspi.NewAdaptor()
-	pca9685 = i2c.NewPCA9685Driver(r)
-	oled = i2c.NewSSD1306Driver(r)
-	// mpu6050 = i2c.NewMPU6050Driver(r)
+	}
 	keys := keyboard.NewDriver()
 
-	ctx = gg.NewContext(oled.Buffer.Width, oled.Buffer.Height)
+	steering := 0.0
+	throttleZero := 350
+	throttlePower := 0.25
+
+	ggCtx := gg.NewContext(oled.Buffer.Width, oled.Buffer.Height)
 
 	work := func() {
 		gobot.Every(1*time.Second, func() {
-			handleOLED()
+			handleOLED(ggCtx, steering, oled)
 		})
 
-		/*gobot.Every(100*time.Millisecond, func() {
-			handleAccel()
-		})*/
+		gobot.Every(100*time.Millisecond, func() {
+			if enableMpu6050 {
+				handleAccel(mpu6050)
+			}
+		})
 
 		// init the PWM controller
 		pca9685.SetPWMFreq(60)
@@ -62,29 +55,29 @@ func main() {
 
 			switch key.Key {
 			case keyboard.ArrowUp:
-				setThrottle(throttlePower)
+				setThrottle(pca9685, throttlePower)
 
 				gobot.After(1*time.Second, func() {
-					setThrottle(0)
+					setThrottle(pca9685, 0)
 				})
 			case keyboard.ArrowDown:
-				setThrottle(-1 * throttlePower)
+				setThrottle(pca9685, -1*throttlePower)
 
 				gobot.After(1*time.Second, func() {
-					setThrottle(0)
+					setThrottle(pca9685, 0)
 				})
 			case keyboard.ArrowRight:
 				if steering < 1.0 {
 					steering = round(steering+0.1, 0.05)
 				}
 
-				setSteering(steering)
+				setSteering(pca9685, steering)
 			case keyboard.ArrowLeft:
 				if round(steering, 0.05) > -1.0 {
 					steering = round(steering-0.1, 0.05)
 				}
 
-				setSteering(steering)
+				setSteering(pca9685, steering)
 			}
 		})
 	}
@@ -96,34 +89,34 @@ func main() {
 	)
 
 	robot.Start()
+
 }
 
-func handleOLED() {
-	ctx.SetRGB(0, 0, 0)
-	ctx.Clear()
-	ctx.SetRGB(1, 1, 1)
-	ctx.DrawStringAnchored(time.Now().Format("15:04:05"), 0, 0, 0, 1)
+func handleOLED(ggCtx *gg.Context, steering float64, oled *i2c.SSD1306Driver) {
+	ggCtx.SetRGB(0, 0, 0)
+	ggCtx.Clear()
+	ggCtx.SetRGB(1, 1, 1)
+	ggCtx.DrawStringAnchored(time.Now().Format("15:04:05"), 0, 0, 0, 1)
 
-	ctx.DrawStringAnchored(fmt.Sprint("Steering: ", steering), 0, 32, 0, 1)
-	oled.ShowImage(ctx.Image())
+	ggCtx.DrawStringAnchored(fmt.Sprint("Steering: ", steering), 0, 32, 0, 1)
+	oled.ShowImage(ggCtx.Image())
 }
 
-/*
-func handleAccel() {
+func handleAccel(mpu6050 *i2c.MPU6050Driver) {
+
 	mpu6050.GetData()
 
-	// fmt.Println("Accelerometer", mpu6050.Accelerometer)
-	// fmt.Println("Gyroscope", mpu6050.Gyroscope)
-	// fmt.Println("Temperature", mpu6050.Temperature)
+	fmt.Println("Accelerometer", mpu6050.Accelerometer)
+	fmt.Println("Gyroscope", mpu6050.Gyroscope)
+	fmt.Println("Temperature", mpu6050.Temperature)
 }
-*/
 
-func setSteering(steering float64) {
+func setSteering(pca9685 *i2c.PCA9685Driver, steering float64) {
 	steeringVal := getSteeringPulse(steering)
 	pca9685.SetPWM(1, 0, uint16(steeringVal))
 }
 
-func setThrottle(throttle float64) {
+func setThrottle(pca9685 *i2c.PCA9685Driver, throttle float64) {
 	throttleVal := getThrottlePulse(throttle)
 	pca9685.SetPWM(0, 0, uint16(throttleVal))
 }

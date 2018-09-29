@@ -15,31 +15,65 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/hybridgroup/gophercar"
 	"github.com/spf13/cobra"
+)
+
+var (
+	cameraId        int
+	streamListenUrl string
+	enableCamera    bool
+	enableMpu6050   bool
 )
 
 // keyboardCmd represents the keyboard command
 var keyboardCmd = &cobra.Command{
 	Use:   "keyboard",
-	Short: "Manually drive the car via the keyboard",
-	Long: ``,
+	Short: "Manually drive the car via the keyboard, with optional camera view",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("keyboard called")
+
+		if enableCamera {
+			go gophercar.MpegStream(cameraId, streamListenUrl)
+		}
+
+		gophercar.DriveKeyboard(enableMpu6050)
+
 	},
 }
 
 func init() {
+
 	rootCmd.AddCommand(keyboardCmd)
 
-	// Here you will define your flags and configuration settings.
+	cameraviewCmd.PersistentFlags().BoolVarP(
+		&enableCamera,
+		"enable-camera",
+		"c",
+		false,
+		"Enable camera streaming.  If true, must provide other camera related flags.",
+	)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// keyboardCmd.PersistentFlags().String("foo", "", "A help for foo")
+	cameraviewCmd.PersistentFlags().IntVar(
+		&cameraId,
+		"camera-id",
+		0,
+		"The camera id, eg, 0",
+	)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// keyboardCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cameraviewCmd.PersistentFlags().StringVar(
+		&streamListenUrl,
+		"stream-listen-url",
+		"0.0.0.0:8080",
+		"The interface and port to listen on to stream the video",
+	)
+
+	cameraviewCmd.PersistentFlags().BoolVarP(
+		&enableMpu6050,
+		"enable-mpu6050",
+		"m",
+		false,
+		"Enable mpu6050 accelerometer/gyroscope.  ",
+	)
+
 }
