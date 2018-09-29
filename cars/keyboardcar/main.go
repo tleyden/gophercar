@@ -24,7 +24,7 @@ var (
 	r       *raspi.Adaptor
 	pca9685 *i2c.PCA9685Driver
 	oled    *i2c.SSD1306Driver
-	mpu6050 *i2c.MPU6050Driver
+	// mpu6050 *i2c.MPU6050Driver
 
 	ctx *gg.Context
 
@@ -37,7 +37,7 @@ func main() {
 	r = raspi.NewAdaptor()
 	pca9685 = i2c.NewPCA9685Driver(r)
 	oled = i2c.NewSSD1306Driver(r)
-	mpu6050 = i2c.NewMPU6050Driver(r)
+	// mpu6050 = i2c.NewMPU6050Driver(r)
 	keys := keyboard.NewDriver()
 
 	ctx = gg.NewContext(oled.Buffer.Width, oled.Buffer.Height)
@@ -47,9 +47,9 @@ func main() {
 			handleOLED()
 		})
 
-		gobot.Every(100*time.Millisecond, func() {
+		/*gobot.Every(100*time.Millisecond, func() {
 			handleAccel()
-		})
+		})*/
 
 		// init the PWM controller
 		pca9685.SetPWMFreq(60)
@@ -91,7 +91,7 @@ func main() {
 
 	robot := gobot.NewRobot("gophercar",
 		[]gobot.Connection{r},
-		[]gobot.Device{pca9685, oled, mpu6050, keys},
+		[]gobot.Device{pca9685, oled, keys},
 		work,
 	)
 
@@ -108,6 +108,7 @@ func handleOLED() {
 	oled.ShowImage(ctx.Image())
 }
 
+/*
 func handleAccel() {
 	mpu6050.GetData()
 
@@ -115,6 +116,7 @@ func handleAccel() {
 	// fmt.Println("Gyroscope", mpu6050.Gyroscope)
 	// fmt.Println("Temperature", mpu6050.Temperature)
 }
+*/
 
 func setSteering(steering float64) {
 	steeringVal := getSteeringPulse(steering)
