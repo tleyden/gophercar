@@ -13,7 +13,6 @@
 //		sudo modprobe bcm2835-v4l2
 // 		go run ./cmd/mjpeg-streamer/main.go 0 0.0.0.0:8080
 //
-// +build example
 
 package main
 
