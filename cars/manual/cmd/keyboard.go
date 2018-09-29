@@ -46,7 +46,7 @@ func init() {
 
 	rootCmd.AddCommand(keyboardCmd)
 
-	cameraviewCmd.PersistentFlags().BoolVarP(
+	keyboardCmd.PersistentFlags().BoolVarP(
 		&enableCamera,
 		"enable-camera",
 		"c",
@@ -54,21 +54,21 @@ func init() {
 		"Enable camera streaming.  If true, must provide other camera related flags.",
 	)
 
-	cameraviewCmd.PersistentFlags().IntVar(
+	keyboardCmd.PersistentFlags().IntVar(
 		&cameraId,
 		"camera-id",
 		0,
 		"The camera id, eg, 0",
 	)
 
-	cameraviewCmd.PersistentFlags().StringVar(
+	keyboardCmd.PersistentFlags().StringVar(
 		&streamListenUrl,
 		"stream-listen-url",
 		"0.0.0.0:8080",
 		"The interface and port to listen on to stream the video",
 	)
 
-	cameraviewCmd.PersistentFlags().BoolVarP(
+	keyboardCmd.PersistentFlags().BoolVarP(
 		&enableMpu6050,
 		"enable-mpu6050",
 		"m",
