@@ -15,17 +15,15 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/spf13/cobra"
 	"github.com/hybridgroup/gophercar"
+	"github.com/spf13/cobra"
 )
 
 // joystickCmd represents the joystick command
 var joystickCmd = &cobra.Command{
 	Use:   "joystick",
 	Short: "Manually drive the car via a joystick, with optional camera view",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if enableCamera {
