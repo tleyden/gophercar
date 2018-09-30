@@ -60,7 +60,7 @@ var camerarecordCmd = &cobra.Command{
 		}
 		defer writer.Close()
 
-		fmt.Printf("Recording %v to %v...\n", targetRecordCodec, targetFileWithCodec)
+		fmt.Printf("Recording %v to %v\n", targetRecordCodec, targetFileWithCodec)
 
 		numFramesRead := 0
 		for {

@@ -14,7 +14,7 @@ import (
 )
 
 // Drive the car via keyboard control
-func DriveKeyboard(enableMpu6050 bool) {
+func DriveKeyboard(enableMpu6050 bool, throttlePower float64) {
 
 	r := raspi.NewAdaptor()
 	pca9685 := i2c.NewPCA9685Driver(r)
@@ -28,7 +28,6 @@ func DriveKeyboard(enableMpu6050 bool) {
 
 	steering := 0.0
 	throttleZero := 350
-	throttlePower := 0.25
 
 	ggCtx := gg.NewContext(oled.Buffer.Width, oled.Buffer.Height)
 

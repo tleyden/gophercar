@@ -24,6 +24,7 @@ var (
 	streamListenUrl string
 	enableCamera    bool
 	enableMpu6050   bool
+	throttlePower float64
 )
 
 // keyboardCmd represents the keyboard command
@@ -37,7 +38,7 @@ var keyboardCmd = &cobra.Command{
 			go gophercar.MpegStream(cameraId, streamListenUrl)
 		}
 
-		gophercar.DriveKeyboard(enableMpu6050)
+		gophercar.DriveKeyboard(enableMpu6050, throttlePower)
 
 	},
 }
@@ -74,6 +75,13 @@ func init() {
 		"m",
 		false,
 		"Enable mpu6050 accelerometer/gyroscope.  ",
+	)
+
+	keyboardCmd.PersistentFlags().Float64Var(
+		&throttlePower,
+		"throttle-power",
+		0.25,
+		"The amount of throttle power to assign to down arrow.  Lower makes it easier to control, but might not have thrust needed to go up hills.",
 	)
 
 }
