@@ -26,6 +26,7 @@ import (
 var (
 	targetRecordFile string
 	recordNumFrames int
+	targetRecordCodec string
 )
 
 // camerarecordCmd represents the camerarecord command
@@ -51,19 +52,22 @@ var camerarecordCmd = &cobra.Command{
 			return
 		}
 
-		writer, err := gocv.VideoWriterFile(targetRecordFile, "MJPG", 25, img.Cols(), img.Rows(), true)
+		targetFileWithCodec := fmt.Sprintf("%s.%s", targetRecordFile, targetRecordCodec)
+		writer, err := gocv.VideoWriterFile(targetFileWithCodec, targetRecordCodec, 25, img.Cols(), img.Rows(), true)
 		if err != nil {
 			fmt.Printf("error opening video writer device: %v\n", targetRecordFile)
 			return
 		}
 		defer writer.Close()
 
-		fmt.Printf("Recording...")
+		fmt.Printf("Recording %v to %v...\n", targetRecordCodec, targetFileWithCodec)
 
 		numFramesRead := 0
 		for {
 
 			if recordNumFrames != 0 && numFramesRead >= recordNumFrames {
+				fmt.Printf("Read %v frames, finished \n", recordNumFrames)
+
 				break
 			}
 			numFramesRead += 1
@@ -76,7 +80,11 @@ var camerarecordCmd = &cobra.Command{
 				continue
 			}
 
-			writer.Write(img)
+			err := writer.Write(img)
+			if err != nil {
+				fmt.Printf("Error writing to VideoWriterFile: %v\n", err)
+				return
+			}
 		}
 
 	},
@@ -97,8 +105,15 @@ func init() {
 	camerarecordCmd.PersistentFlags().StringVar(
 		&targetRecordFile,
 		"target-record-file",
-		fmt.Sprintf("camera-%s.mjpg", time.Now()),
-		"The target file where to save the mjpg video",
+		fmt.Sprintf("camera-%s", time.Now()),
+		"The target file where to save the video.  The extension will be chosen using the codec.",
+	)
+
+	camerarecordCmd.PersistentFlags().StringVar(
+		&targetRecordCodec,
+		"codec",
+		"MP4V",
+		"The codec, one of the following: [MP4V, MJPG]",
 	)
 
 	camerarecordCmd.PersistentFlags().IntVar(
