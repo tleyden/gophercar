@@ -58,13 +58,15 @@ var camerarecordCmd = &cobra.Command{
 		}
 		defer writer.Close()
 
+		fmt.Printf("Recording...")
+
 		numFramesRead := 0
 		for {
 
 			if recordNumFrames != 0 && numFramesRead >= recordNumFrames {
 				break
 			}
-			recordNumFrames += 1
+			numFramesRead += 1
 
 			if ok := webcam.Read(&img); !ok {
 				fmt.Printf("Device closed: %v\n", cameraId)
