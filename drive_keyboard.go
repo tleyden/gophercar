@@ -23,7 +23,6 @@ func DriveKeyboard(enableMpu6050 bool) {
 	var mpu6050 *i2c.MPU6050Driver
 	if enableMpu6050 {
 		mpu6050 = i2c.NewMPU6050Driver(r)
-
 	}
 	keys := keyboard.NewDriver()
 

@@ -15,12 +15,8 @@
 package cmd
 
 import (
-	"log"
-
-	"fmt"
 	"github.com/hybridgroup/gophercar"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 // cameraviewCmd represents the cameraview command
@@ -30,17 +26,7 @@ var cameraviewCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		cameraId := cmd.Flag("camera-id")
-		cameraIdInt, err := strconv.Atoi(cameraId.Value.String())
-		if err != nil {
-			panic(fmt.Sprintf("Invalid camera id: %v", cameraIdInt))
-		}
-
-		streamListenUrl := cmd.Flag("stream-listen-url")
-
-		log.Printf("cameraId: %v, streamListenUrl: %v", cameraId.Value, streamListenUrl.Value)
-
-		gophercar.MpegStream(cameraIdInt, streamListenUrl.Value.String())
+		gophercar.MpegStream(cameraId, streamListenUrl)
 
 	},
 }
@@ -49,13 +35,15 @@ func init() {
 
 	rootCmd.AddCommand(cameraviewCmd)
 
-	cameraviewCmd.PersistentFlags().Int(
+	cameraviewCmd.PersistentFlags().IntVar(
+		&cameraId,
 		"camera-id",
 		0,
 		"The camera id, eg, 0",
 	)
 
-	cameraviewCmd.PersistentFlags().String(
+	cameraviewCmd.PersistentFlags().StringVar(
+		&streamListenUrl,
 		"stream-listen-url",
 		"0.0.0.0:8080",
 		"The interface and port to listen on to stream the video",

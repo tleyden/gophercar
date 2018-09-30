@@ -18,28 +18,55 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/hybridgroup/gophercar"
 )
 
 // joystickCmd represents the joystick command
 var joystickCmd = &cobra.Command{
 	Use:   "joystick",
-	Short: "Manually drive the car via a joystick",
+	Short: "Manually drive the car via a joystick, with optional camera view",
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("joystick called")
+
+		if enableCamera {
+			go gophercar.MpegStream(cameraId, streamListenUrl)
+		}
+
+		gophercar.DriveJoystick(enableMpu6050)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(joystickCmd)
 
-	// Here you will define your flags and configuration settings.
+	joystickCmd.PersistentFlags().BoolVarP(
+		&enableCamera,
+		"enable-camera",
+		"c",
+		false,
+		"Enable camera streaming.  If true, must provide other camera related flags.",
+	)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// joystickCmd.PersistentFlags().String("foo", "", "A help for foo")
+	joystickCmd.PersistentFlags().IntVar(
+		&cameraId,
+		"camera-id",
+		0,
+		"The camera id, eg, 0",
+	)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// joystickCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	joystickCmd.PersistentFlags().StringVar(
+		&streamListenUrl,
+		"stream-listen-url",
+		"0.0.0.0:8080",
+		"The interface and port to listen on to stream the video",
+	)
+
+	joystickCmd.PersistentFlags().BoolVarP(
+		&enableMpu6050,
+		"enable-mpu6050",
+		"m",
+		false,
+		"Enable mpu6050 accelerometer/gyroscope.  ",
+	)
+
 }
